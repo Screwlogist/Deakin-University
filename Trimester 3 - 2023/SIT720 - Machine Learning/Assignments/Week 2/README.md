@@ -1,1 +1,4 @@
-
+1. Read "sensor-readings-with-temperature-light-humidity-every-5-minutes-at-8-locations-t.csv" and print the feature name with numbers of missing entries.
+2. Fill in the missing entries. For filling any feature, you can use either the mean or median value of the feature values from observed entries. Explain the reason behind your choice and print replacement value of each feature.
+3. Encode the categorical variable  location" using an appropriate encoding approach and display the encoded values. Justify your selection of encoding approach.  Save the modified data into a csv file. Upload this new file with your submission in OnTrack.
+4. Apply the min-max scaling on features "[boardtype, boardid ,temp_max, temp_min, temp_avg,light_max, light_min,light_avg, humidity_min, humidity_max, humidity_avg]" . Plot distribution of first six features before and after scaling. Is there any difference? Please explain. 
