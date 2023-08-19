@@ -1,0 +1,420 @@
+---
+title: "RWA Assignment - 2"
+output: html_notebook
+---
+Q1
+Reading the data
+```{r}
+the.data <- as.matrix(read.table("ENB_2023.txt"))
+```
+
+Setting the seed for replication
+```{r}
+set.seed(223602808)
+```
+
+Taking only certain rows
+```{r}
+my.data <- the.data[sample(1:671,340),c(1:6)]
+```
+
+```{r}
+backup_data<-my.data
+```
+
+
+Plotting Scatter Plots 
+```{r}
+par(mfrow=c(2,3))
+```
+
+```{r}
+plot(my.data[,6], my.data[,1], main="Scatter plot between Energy use and
+     Temperature in kitchen area", xlab="Energy Use (in Wh)", 
+     ylab="Temperature (in Celsius)", col=" dark red")
+```
+
+```{r}
+plot(my.data[,6], my.data[,2], main="Scatter plot between Energy use and
+     Humidity in kitchen area", xlab="Energy Use (in Wh)", 
+     ylab="Humidity (in Percentage)", col="dark red")
+```
+
+```{r}
+plot(my.data[,6], my.data[,3], main="Scatter plot between Energy use and
+     Temperature outside", xlab="Energy Use (in Wh)", 
+     ylab="Temperature (in Celsius)", col="dark red")
+```
+
+```{r}
+plot(my.data[,6], my.data[,4], main="Scatter plot between Energy use and
+     Humidity outisde", xlab="Energy Use (in Wh)", 
+     ylab="Humidity (in Percentage)", col="dark red")
+```
+
+```{r}
+plot(my.data[,6], my.data[,5], main="Scatter plot between Energy use and
+     Visibility", xlab="Energy Use (in Wh)", 
+     ylab="Visibility (in km)", col="dark red")
+```
+Importing library
+```{r}
+library(rcompanion)
+```
+
+Plotting Histogram
+```{r}
+par(mfrow=c(2,3))
+```
+
+```{r}
+plotNormalHistogram(my.data[,1], main = "Histogram of Temperature in kitchen area", xlab= "Temperature (in Celsius)", breaks=5, las=1, xlim=c(14,26), col="yellow")
+```
+
+```{r}
+plotNormalHistogram(my.data[,2], main = "Histogram of Humidity in kitchen area", xlab= "Humidity (in Percentage)", breaks=5, las=1, xlim=c(25,55), col="yellow")
+```
+
+```{r}
+plotNormalHistogram(my.data[,3], main = "Histogram of Temperature outside (from weather station)", xlab= "Temperature (in Celsius)", breaks=5, las=1, xlim=c(0,7),col="yellow")
+```
+
+```{r}
+plotNormalHistogram(my.data[,4], main = "Histogram of Humidity outside (from weather station)", xlab= "Humidity (in Percentage)", breaks=5, las=1, xlim=c(60,100),col="yellow")
+```
+
+```{r}
+plotNormalHistogram(my.data[,5], main = "Histogram of Visibility (from weather station)", xlab= "Visibility (in km)", breaks=5, las=1, xlim=c(10,70), col="yellow")
+```
+
+```{r}
+plotNormalHistogram(my.data[,6], main = "Histogram of Energy use of appliances", xlab= "Energy (in Wh)", breaks=5, las=1,xlim=c(20,200),col="yellow")
+```
+
+```{r}
+for( i in 1:6) {
+  pvalue_variables<-ks.test(jitter(my.data[,i]), "pnorm", mean=mean(my.data[,i]), sd=sd(my.data[,i]))
+  print(pvalue_variables)
+}
+```
+KS - Test Result
+X1 P-value = 0.4642
+X2 P-value = 0.1477
+X3 P-value = 0.007026
+X4 P-value = 0.06664
+X5 P-value = 5.509e-05
+Y P-value = 7.383e-14
+
+Since p-value for X1, X2, X4 is > 0.05, there is no significant difference between normal distribution and distribution of variables. Hence leaving the data untransformed.
+
+Also, X3, X5 and Y are not normally distributed as per the KS - test, we need to check for skewness and apply transformation accordingly.
+
+If Skewness is 0, then it means to be a perfect normal distribution
+If Skewness is between -0.5 and 0.5, we can approximate it to a normal distribution
+If Skewness is > 0.5, it is positively Skewed
+If Skewness is <-0.5, it is negatively Skewed
+
+Importing moments library for finding skewness
+```{r}
+library(moments)
+```
+
+Finding skewness for X3
+```{r}
+print(skewness(my.data[,3]))
+```
+
+Finding skewness for X5
+```{r}
+print(skewness(my.data[,5]))
+```
+
+Finding skewness for Y
+```{r}
+print(skewness(my.data[,6]))
+```
+Skewness:
+X3 = 0.01446961
+X5 = 0.7299919
+Y = 1.917926
+
+Since Skewness X3 is very close 0, we can ignore performing any transformation to it.
+
+Since X5 and Y is > 0.5, they are positively Skewed. Hence we will apply log transformation on X5 and Y.
+
+```{r}
+pearson_results<-array(0,5)
+```
+
+```{r}
+for(i in 1:5){
+  pearson_results[i]<-cor(my.data[,6], my.data[,i])
+}
+```
+
+```{r}
+pearson_results
+```
+
+```{r}
+spearman_results<-array(0,5)
+```
+
+```{r}
+for(i in 1:5){
+  spearman_results[i]<-cor(my.data[,6], my.data[,i])
+}
+```
+
+```{r}
+spearman_results
+```
+
+We are choosing X1, X2, X3 and X5 based on Pearson correlation and coefficient and Spearman's rank correlation coefficient.
+We did not select X4 because it has the weakest relationship with Y.
+
+Applying log transformation on X5 and Y
+Creating the log function
+```{r}
+log.fun<-function(x){
+  result=log10(x)
+  return(result)
+}
+```
+
+Applying log on X5
+```{r}
+my.data[,5] <- log.fun(my.data[,5])
+```
+
+```{r}
+log.transform.5 <- my.data[,5]
+```
+
+```{r}
+log.transform.5
+```
+Applying log on Y
+```{r}
+my.data[,6] <- log.fun(my.data[,6])
+```
+
+```{r}
+log.transform.Y <- my.data[,6]
+```
+
+```{r}
+log.transform.Y
+```
+Applying min-max
+```{r}
+minmax<-function(x){
+  result=(x-min(x))/(max(x)-min(x))
+  return(result)
+}
+```
+
+```{r}
+my.data[,1] <- minmax(my.data[,1])
+```
+
+```{r}
+my.data[,2] <- minmax(my.data[,2])
+```
+
+```{r}
+my.data[,2]
+```
+
+```{r}
+my.data[,3] <- minmax(my.data[,3])
+```
+
+```{r}
+my.data[,4] <- minmax(my.data[,4])
+```
+
+```{r}
+my.data[,5] <- minmax(my.data[,5])
+```
+
+```{r}
+my.data[,6] <- minmax(my.data[,6])
+```
+
+```{r}
+par(mfrow=c(2,3))
+```
+
+```{r}
+plotNormalHistogram(my.data[,1], main = "Histogram of Humidity in kitchen area after Min-Max transformation", xlab= "Humidity (in Percentage)", las=1,col="green")
+```
+
+```{r}
+plotNormalHistogram(my.data[,2], main = "Histogram of Humidity in kitchen area after Min-Max transformation", xlab= "Humidity (in Percentage)", las=1,col="green")
+```
+```{r}
+plotNormalHistogram(my.data[,3], main = "Histogram of Humidity in kitchen area after Min-Max transformation", xlab= "Humidity (in Percentage)", las=1,col="green")
+```
+
+```{r}
+plotNormalHistogram(my.data[,5], main = "Histogram of Humidity in kitchen area after Min-Max transformation", xlab= "Humidity (in Percentage)", las=1,col="green")
+```
+
+```{r}
+plotNormalHistogram(my.data[,6], main = "Histogram of Humidity in kitchen area after Min-Max transformation", xlab= "Humidity (in Percentage)", las=1,col="green")
+```
+
+Since we do not need X4 we can remove that feature 
+```{r}
+my.data<-my.data[,-4]
+```
+
+Verifying the data
+```{r}
+View(my.data)
+```
+
+Writing the data to another file
+```{r}
+write.table(my.data, "likith_transformed_sample.txt")
+```
+
+Importing AggWaFit.R
+```{r}
+source("AggWaFit718.R")
+```
+
+Reading the data and converting it to a matrix for manipulation
+```{r}
+transformed.data<-as.matrix(read.table("likith_transformed_sample.txt"))
+```
+
+```{r}
+View(transformed.data)
+```
+
+Building Models
+weights for Weighted Arithmetic Mean with fit.QAM()
+```{r}
+fit.QAM(transformed.data,"out_AM.txt","stat_AM.txt",g=AM,g.inv=invAM)
+```
+RMSE 0.167044631433746
+Av. abs error 0.128133480607362
+Pearson correlation 0.589251762910605
+Spearman correlation 0.543675440205338
+
+weights for Power Mean p=0.5 with fit.QAM()
+```{r}
+fit.QAM(transformed.data,"out_PM05.txt","stat_PM05.txt",g=PM05,g.inv=invPM05)
+```
+RMSE 0.172205586055085
+Av. abs error 0.131275041599399
+Pearson correlation 0.56413850037432
+Spearman correlation 0.529207819083485
+
+weights for Power Mean p=2 with fit.QAM()
+```{r}
+fit.QAM(transformed.data,"out_QM.txt","stat_QM.txt",g=QM,g.inv=invQM)
+```
+RMSE 0.162658294298987
+Av. abs error 0.125277679913978
+Pearson correlation 0.607491775262898
+Spearman correlation 0.558280759785093
+
+weights for Ordered Weighted Average with fit.OWA()
+```{r}
+fit.OWA(transformed.data,"out_OWA.txt","stat_OWA.txt")
+```
+RMSE 0.178060803916844
+Av. abs error 0.139440884735571
+Pearson correlation 0.473244183224705
+Spearman correlation 0.423779691018706
+Orness 0.570405825156529
+
+weights for Choquet Integral with fit.choquet()
+```{r}
+fit.choquet(transformed.data,"out_choq.txt","stat_choq.txt")
+```
+RMSE 0.156912634794026
+Av. abs error 0.121800581867797
+Pearson Correlation 0.631595637242979
+Spearman Correlation 0.582679534069074
+Orness 0.643574950868064
+
+Using model for prediction
+Since we can see that the choquet provides the lowest RMSE and Av. abs error, we can select choquet model for prediction
+X1=22; X2=38; X3=4; X4=88.2; X5=34
+
+Selecting only X1, X2, X3 and X5 because we trained the model with these features
+```{r}
+new.data <- c(22,38,4,34)
+```
+
+```{r}
+transform.new.data<-new.data
+```
+
+Transforming the new data
+Since we did not apply any transformation for X1, X2 and X3 features, we are also not going to apply any transformation for the new data
+min-maxing X1
+```{r}
+transform.new.data[1]<-(new.data[1]-min(backup_data[,1]))/(max(backup_data[,1])-min(backup_data[,1]))
+```
+
+min-maxing X2
+```{r}
+transform.new.data[2]<-(new.data[2]-min(backup_data[,2]))/(max(backup_data[,2])-min(backup_data[,2]))
+```
+
+min-maxing X3
+```{r}
+transform.new.data[3]<-(new.data[3]-min(backup_data[,3]))/(max(backup_data[,3])-min(backup_data[,3]))
+```
+
+Applying log, since we applied log transformation for X5
+```{r}
+transform.new.data[4]<-log.fun(new.data[4])
+```
+
+min-maxing X5
+```{r}
+transform.new.data[4]<-(transform.new.data[4]-min(log.transform.5))/(max(log.transform.5)-min(log.transform.5))
+```
+
+```{r}
+transform.new.data
+```
+
+Taking the choquet weights from the stat_choq output file
+```{r}
+ChoqWeights <- c(0.54193303432683, 0, 0.54193303432683, 0.773863518370135, 0.999999999997865, 0.773863518370135, 0.999999999997865, 0.402146540858998, 0.541933034326625, 0.402146540858998, 0.541933034326625, 0.773863518370138, 0.999999999999115, 0.773863518370138, 0.999999999999115)
+```
+
+Prediction MAIN EVENT WRESTLEMANIA...!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+```{r}
+result <- choquet(transform.new.data, ChoqWeights)
+```
+
+```{r}
+result
+```
+
+Reversing the transformation
+```{r}
+transform.result<-result*(max(log.transform.Y)-min(log.transform.Y))+min(log.transform.Y)
+```
+
+```{r}
+transform.result
+```
+
+```{r}
+predicted_output<-10^(transform.result)
+```
+
+```{r}
+predicted_output
+```
+
+
